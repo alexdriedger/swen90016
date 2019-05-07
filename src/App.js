@@ -13,6 +13,21 @@ class App extends React.Component {
           name: "",
           address: "",
           contactNumber: ""
+        },
+        {
+          username: "test",
+          password: "testing",
+          name: "Bob",
+          address: "123 Street",
+          contactNumber: "123-456-7890"
+        }
+      ],
+      doctors: [
+        {
+          type: "chiropractor",
+          name: "Alena",
+          email: "alena@blackhole.com",
+          price: 150
         }
       ],
       currentUsername: "",
@@ -31,6 +46,10 @@ class App extends React.Component {
       return <div>{this.renderLoginScreen()}</div>;
     } else if (this.state.screen === "createNewUser") {
       return <div>{this.renderCreateNewUserScreen()}</div>;
+    } else if (this.state.screen === "homeScreen") {
+      return <div>{this.renderHomeScreen()}</div>;
+    } else if (this.state.screen === "registerDoctorsScreen") {
+      return <div>{this.renderRegisterDoctorsScreen()}</div>;
     }
   }
 
@@ -44,7 +63,7 @@ class App extends React.Component {
                 this.state.currentUsername === user.username &&
                 this.state.currentPassword === user.password
               ) {
-                this.setState({ loggedIn: true });
+                this.setState({ loggedIn: true, screen: "homeScreen" });
                 console.log("Loggin in successfully");
               }
             });
@@ -191,6 +210,32 @@ class App extends React.Component {
         </form>
       </div>
     );
+  };
+
+  renderHomeScreen = () => {
+    return (
+      <div>
+        Hello
+        <div>
+          {this.state.currentUsername === "Admin" ? (
+            <button
+              onClick={() => {
+                console.log("Navigate to register health professionals screen");
+                this.setState({ screen: "registerDoctorsScreen" });
+              }}
+            >
+              Register Health Professionals
+            </button>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
+  render;
+
+  renderRegisterDoctorsScreen = () => {
+    return <div>Let's register a doc!</div>;
   };
 }
 
