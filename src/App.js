@@ -232,8 +232,6 @@ class App extends React.Component {
     );
   };
 
-  render;
-
   renderRegisterDoctorsScreen = () => {
     return <div>Let's register a doc!</div>;
   };
