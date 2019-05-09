@@ -1,6 +1,10 @@
 import React from "react";
 import "./App.css";
 
+import Dayz from 'dayz';
+import 'dayz/dist/dayz.css';
+import moment from 'moment';
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -37,7 +41,14 @@ class App extends React.Component {
       newUserAddress: "",
       newUserContactNumber: "",
       newUserEmail: "",
-      newUserPassword: ""
+      newUserPassword: "",
+	  appointments : new Dayz.EventsCollection([
+		{ 	content: 'Appointment, nodoubt nodoubt',
+			range: moment.range( moment(),
+								moment().add(2, 'day') ) },
+	  ]),
+	  range:moment.range( moment().hour(17).minutes(0).seconds(0),
+								moment().hour(18).minutes(0).seconds(0) )
     };
   }
 
@@ -228,6 +239,7 @@ class App extends React.Component {
             </button>
           ) : null}
         </div>
+		{this.renderCalendar()}
       </div>
     );
   };
@@ -235,6 +247,16 @@ class App extends React.Component {
   renderRegisterDoctorsScreen = () => {
     return <div>Let's register a doc!</div>;
   };
+  
+  renderCalendar() {
+	return <div>
+			<Dayz
+				display='week'
+				date={moment()}
+				events={this.state.appointments}
+			/>
+			</div>
+  }
 }
 
 export default App;
