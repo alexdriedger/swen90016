@@ -37,7 +37,10 @@ class App extends React.Component {
       newUserAddress: "",
       newUserContactNumber: "",
       newUserEmail: "",
-      newUserPassword: ""
+      newUserPassword: "",
+      newDocType: "",
+      newDocPrice: "",
+      activeUser: 0
     };
   }
 
@@ -50,7 +53,10 @@ class App extends React.Component {
       return <div>{this.renderHomeScreen()}</div>;
     } else if (this.state.screen === "registerDoctorsScreen") {
       return <div>{this.renderRegisterDoctorsScreen()}</div>;
+  } else if (this.state.screen === "editUser") {
+    return <div>{this.editUserScreen()}</div>;
     }
+
   }
 
   renderLoginScreen = () => {
@@ -58,12 +64,16 @@ class App extends React.Component {
       <div className="LoginScreen">
         <form
           onSubmit={event => {
+            this.setState({activeUser: 0});
+            var i = -1;
             this.state.users.forEach(user => {
+              i++;
+              console.log(i);
               if (
                 this.state.currentUsername === user.username &&
                 this.state.currentPassword === user.password
               ) {
-                this.setState({ loggedIn: true, screen: "homeScreen" });
+                this.setState({ loggedIn: true, screen: "homeScreen", activeUser: i });
                 console.log("Loggin in successfully");
               }
             });
@@ -226,14 +236,212 @@ class App extends React.Component {
             >
               Register Health Professionals
             </button>
-          ) : null}
+          )
+          : <button
+            onClick={() => {
+              this.setState({ screen: "editUser" });
+            }}
+          >
+            Edit User Details
+          </button>
+          }
         </div>
       </div>
     );
   };
 
   renderRegisterDoctorsScreen = () => {
-    return <div>Let's register a doc!</div>;
+      return (
+        <div>
+          <div>Add a new Health Care Professional</div>
+          <form
+            onSubmit={event => {
+              event.preventDefault();
+              this.setState(prevState => ({
+                doctors: [
+                  ...prevState.doctors,
+                  {
+                    type: this.state.newDocType,
+                    name: this.state.newUserName,
+                    email: this.state.newUserEmail,
+                    price: this.state.newDocPrice
+                  }
+                ],
+                screen: "homeScreen",
+                newUserName: "",
+                newDocType: "",
+                newUserEmail: "",
+                newDocPrice: ""
+              }));
+              console.log("Added new doctor");
+            }}
+          >
+            <div>
+                <label>
+                  Type
+                  <input
+                    type="text"
+                    value={this.state.newDocType}
+                    list="data"
+                    onChange={event =>
+                      this.setState({ newDocType: event.target.value })
+                    }
+                  />
+                  <datalist id="data">
+                      <option value="Podiatrist" />
+                      <option value="Chiropractor" />
+                      <option value="Naturopath" />
+                  </datalist>
+                </label>
+            </div>
+            <div>
+              <label>
+                Name
+                <input
+                  type="text"
+                  value={this.state.newUserName}
+                  onChange={event =>
+                    this.setState({ newUserName: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Email
+                <input
+                  type="text"
+                  value={this.state.newUserEmail}
+                  onChange={event =>
+                    this.setState({ newUserEmail: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Cost Per Hour
+                <input
+                  type="text"
+                  value={this.state.newDocPrice}
+                  onChange={event =>
+                    this.setState({ newDocPrice: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <input type="submit" value="Register" />
+          </form>
+        </div>
+      );
+  };
+
+  editUserScreen = () => {
+      var tempUsers = this.state.users;
+      var tempCurUser = tempUsers[this.state.activeUser];
+      return (
+        <div>
+          <div>Edit User Details</div>
+          <form
+            onSubmit={event => {
+              event.preventDefault();
+
+                if(this.state.newUserEmail !== "") {
+                    tempCurUser.username = this.state.newUserEmail;
+                }
+                if(this.state.newUserPassword !== "") {
+                    tempCurUser.password = this.state.newUserPassword;
+                }
+                if(this.state.newUserName !== "") {
+                    tempCurUser.name = this.state.newUserName;
+                }
+                if(this.state.newUserAddress !== "") {
+                    tempCurUser.address = this.state.newUserAddress;
+                }
+                if(this.state.newUserContactNumber !== "") {
+                    tempCurUser.contactNumber = this.state.newUserContactNumber;
+                }
+
+              this.setState(prevState => ({
+                users: tempUsers,
+                screen: "homeScreen",
+                newUserName: "",
+                newUserAddress: "",
+                newUserContactNumber: "",
+                newUserEmail: "",
+                newUserPassword: ""
+              }));
+            }}
+          >
+            <div>
+              <label>
+                Name
+                <input
+                  type="text"
+                  placeholder={tempCurUser.name}
+                  value={this.state.newUserName}
+                  onChange={event =>
+                    this.setState({ newUserName: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Home Address
+                <input
+                  type="text"
+                  placeholder={tempCurUser.address}
+                  value={this.state.newUserAddress}
+                  onChange={event =>
+                    this.setState({ newUserAddress: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Contact Phone Number
+                <input
+                  type="text"
+                  placeholder={tempCurUser.contactNumber}
+                  value={this.state.newUserContactNumber}
+                  onChange={event =>
+                    this.setState({ newUserContactNumber: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Email
+                <input
+                  type="text"
+                  placeholder={tempCurUser.username}
+                  value={this.state.newUserEmail}
+                  onChange={event =>
+                    this.setState({ newUserEmail: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Password
+                <input
+                  type="text"
+                  placeholder={tempCurUser.password}
+                  value={this.state.newUserPassword}
+                  onChange={event =>
+                    this.setState({ newUserPassword: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <input type="submit" value="Save" />
+          </form>
+        </div>
+      );
   };
 }
 
