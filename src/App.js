@@ -1,5 +1,10 @@
 import React from "react";
 import "./App.css";
+import AppointmentEvent from './appointmentEvent'
+
+import WeekCalendar from 'react-week-calendar';
+import 'react-week-calendar/dist/style.css';
+import moment from 'moment';
 
 class App extends React.Component {
   constructor(props) {
@@ -30,6 +35,14 @@ class App extends React.Component {
           price: 150
         }
       ],
+	  appointments: [
+		{
+          uid: 6,
+          start: moment({h: 10, m: 0}),
+          end: moment({h: 10, m: 30}),
+          value: "Janine Doink"
+        },
+      ],
       currentUsername: "",
       currentPassword: "",
       loggedIn: false,
@@ -42,6 +55,20 @@ class App extends React.Component {
       newDocPrice: "",
       activeUser: 0
     };
+	this.setupAppointments();
+  }
+  
+  setupAppointments() {
+	for (var i = 1; i <= 5; i++) {
+		this.state.appointments.push(
+			{
+			  uid: i,
+			  start: moment().startOf('week').add(i,'day').hour(12) ,
+			  end: moment().startOf('week').add(i,'day').hour(12).minutes(30),
+			  value: "Lunch"
+			}
+		);
+	}
   }
 
   render() {
@@ -124,6 +151,7 @@ class App extends React.Component {
             Sign Up New User
           </button>
         </div>
+		{this.renderCalendar()}
       </div>
     );
   };
@@ -246,6 +274,7 @@ class App extends React.Component {
           </button>
           }
         </div>
+		{this.renderCalendar()}
       </div>
     );
   };
@@ -445,7 +474,19 @@ class App extends React.Component {
   };
   
   renderCalendar() {
-	return <div>
+	console.log(moment().startOf('week'));
+	return 	<div>
+				<WeekCalendar
+					firstDay = {moment().startOf('week').add(1,'day')}
+					startTime = {moment({h:7,m:0})}
+					endTime = {moment({h:18,m:0})}
+					numberOfDays = {5}
+					scaleHeaderTitle = {'Appointments'}
+					scaleUnit = {30}
+					useModel = {false}
+					selectedIntervals = {this.state.appointments}
+					eventComponent = {AppointmentEvent}
+				/>
 			</div>
   }
 }
