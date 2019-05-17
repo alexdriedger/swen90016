@@ -76,8 +76,10 @@ class App extends React.Component {
       return <div>{this.renderLoginScreen()}</div>;
     } else if (this.state.screen === "createNewUser") {
       return <div>{this.renderCreateNewUserScreen()}</div>;
-    } else if (this.state.screen === "homeScreen") {
-      return <div>{this.renderHomeScreen()}</div>;
+    } else if (this.state.screen === "adminScreen") {
+      return <div>{this.renderAdminScreen()}</div>;
+    } else if (this.state.screen === "customerScreen") {
+      return <div>{this.renderCustomerScreen()}</div>;
     } else if (this.state.screen === "registerDoctorsScreen") {
       return <div>{this.renderRegisterDoctorsScreen()}</div>;
   } else if (this.state.screen === "editUser") {
@@ -100,7 +102,7 @@ class App extends React.Component {
                 this.state.currentUsername === user.username &&
                 this.state.currentPassword === user.password
               ) {
-                this.setState({ loggedIn: true, screen: "homeScreen", activeUser: i });
+                this.setState({ loggedIn: true, screen: this.state.currentUsername === "Admin" ? "adminScreen" : "customerScreen", activeUser: i });
                 console.log("Loggin in successfully");
               }
             });
@@ -151,7 +153,6 @@ class App extends React.Component {
             Sign Up New User
           </button>
         </div>
-		{this.renderCalendar()}
       </div>
     );
   };
@@ -250,12 +251,11 @@ class App extends React.Component {
     );
   };
 
-  renderHomeScreen = () => {
+  renderAdminScreen = () => {
     return (
       <div>
-        Hello
+		Admin Overview
         <div>
-          {this.state.currentUsername === "Admin" ? (
             <button
               onClick={() => {
                 console.log("Navigate to register health professionals screen");
@@ -264,17 +264,51 @@ class App extends React.Component {
             >
               Register Health Professionals
             </button>
-          )
-          : <button
+        </div>
+		<div>
+			<WeekCalendar
+					firstDay = {moment().startOf('week').add(1,'day')}
+					startTime = {moment({h:7,m:0})}
+					endTime = {moment({h:18,m:0})}
+					numberOfDays = {5}
+					scaleHeaderTitle = {'Appointments'}
+					scaleUnit = {30}
+					useModal = {false}
+					selectedIntervals = {this.state.appointments}
+					eventComponent = {AppointmentEvent}
+			/>
+		</div>
+      </div>
+    );
+  };
+  
+  renderCustomerScreen = () => {
+	this.state.appointments.map((app) => app.value = 'Taken'); // Why does this work and is this not a perm change?
+    return (
+      <div>
+		Hello {this.state.currentUsername}
+        <div>
+          <button
             onClick={() => {
               this.setState({ screen: "editUser" });
             }}
           >
             Edit User Details
           </button>
-          }
         </div>
-		{this.renderCalendar()}
+		<div>
+			<WeekCalendar
+					firstDay = {moment().startOf('week').add(1,'day')}
+					startTime = {moment({h:7,m:0})}
+					endTime = {moment({h:18,m:0})}
+					numberOfDays = {5}
+					scaleHeaderTitle = {'Appointments'}
+					scaleUnit = {30}
+					useModal = {false}
+					selectedIntervals = {this.state.appointments}
+					eventComponent = {AppointmentEvent}
+			/>
+		</div>
       </div>
     );
   };
@@ -472,23 +506,6 @@ class App extends React.Component {
         </div>
       );
   };
-  
-  renderCalendar() {
-	console.log(moment().startOf('week'));
-	return 	<div>
-				<WeekCalendar
-					firstDay = {moment().startOf('week').add(1,'day')}
-					startTime = {moment({h:7,m:0})}
-					endTime = {moment({h:18,m:0})}
-					numberOfDays = {5}
-					scaleHeaderTitle = {'Appointments'}
-					scaleUnit = {30}
-					useModel = {false}
-					selectedIntervals = {this.state.appointments}
-					eventComponent = {AppointmentEvent}
-				/>
-			</div>
-  }
 }
 
 export default App;
