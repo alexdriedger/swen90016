@@ -503,7 +503,7 @@ class App extends React.Component {
                 this.setState({ screen: "editAppointment" });
               }}
             >
-              Edit Your Apppointment
+              Edit / Cancel Your Apppointment
             </button>
           </div>;
       }
@@ -895,7 +895,7 @@ class App extends React.Component {
             tempCurApp.value = this.state.currentUsername;
             this.setState(prevState => ({
               appointments: tempApps,
-              screen: "customerScreen",
+              screen: "customerScreen"
             }));
           }}
         >
@@ -967,6 +967,21 @@ class App extends React.Component {
               />
             </label>
           </div>
+          <button
+              onClick={() => {
+                  if(window.confirm("Cancel this appointment?")){
+                      this.setState({
+                        appointments: this.state.appointments.filter((app) =>
+                            app.value !== this.state.currentUsername
+                        ),
+                        screen: "customerScreen"
+                      });
+
+                  }
+              }}
+            >
+  			Cancel Appointment
+          </button>
           <input type="submit" value="Save Appointment" />
         </form>
         </div>
@@ -995,12 +1010,13 @@ class App extends React.Component {
             eventComponent={AppointmentEvent}
 			onEventClick={event => {
                   if(event.value === "You" &&
-					window.confirm("Delete this appointment?")){
+					window.confirm("Cancel this appointment?")){
 					  this.setState({
 						appointments: this.state.appointments.filter((app) =>
 							app.value !== this.state.currentUsername ||
 							app.start !== event.time
-						)
+						),
+                        screen: "customerScreen"
 					  });
 
 				  }
