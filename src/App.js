@@ -3,6 +3,7 @@ import "./App.css";
 import AppointmentEvent from "./appointmentEvent";
 
 import WeekCalendar from "react-week-calendar";
+import HeaderCell from 'react-week-calendar';
 import "react-week-calendar/dist/style.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -58,7 +59,7 @@ class App extends React.Component {
       ],
       appointments: [
         {
-          uid: 6,
+          uid: 8,
           start: moment()
             .hour(13)
             .minute(0),
@@ -70,7 +71,7 @@ class App extends React.Component {
           value: "Janine Doink"
         },
         {
-          uid: 7,
+          uid: 9,
           start: moment()
             .hour(15)
             .minute(0),
@@ -82,7 +83,7 @@ class App extends React.Component {
           value: "val2"
         },
         {
-          uid: 8,
+          uid: 10,
           start: moment()
             .add(1, "day")
             .hour(10)
@@ -96,13 +97,13 @@ class App extends React.Component {
           value: "val3"
         },
         {
-          uid: 9,
+          uid: 11,
           start: moment()
             .hour(11)
-            .minute(30),
+            .minute(30).add(1,'week'),
           end: moment()
             .hour(12)
-            .minute(0),
+            .minute(0).add(1,'week'),
           doctor: "Alena",
           comment: "Stuff & things",
           value: "val4"
@@ -120,18 +121,22 @@ class App extends React.Component {
       newDocPrice: "",
       activeUser: 0,
       createBookingDocType: "chiropractor",
-      createBookingDocName: "",
+      createBookingDocName: "Alena",
       createBookingDate: new Date(),
       createBookingTime: moment()
         .hour(9)
         .format("X"),
-      createBookingComments: ""
+      createBookingComments: "",
+	  calendarDisplayWeek : moment()
+	  .startOf("week")
+      .add(1, "day"),
+	  createBookingUID: 12,
     };
     this.setupAppointments();
   }
 
   setupAppointments() {
-    for (var i = 1; i <= 5; i++) {
+    for (var i = 1; i <= 7; i++) {
       this.state.appointments.push({
         uid: i,
         start: moment()
@@ -369,39 +374,6 @@ class App extends React.Component {
     );
   };
 
-  renderCustomerScreen = () => {
-    this.state.appointments.map(app => (app.value = "Taken")); // Why does this work and is this not a perm change?
-    return (
-      <div>
-        Hello {this.state.currentUsername}
-        <div>
-          <button
-            onClick={() => {
-              this.setState({ screen: "editUser" });
-            }}
-          >
-            Edit User Details
-          </button>
-        </div>
-        <div>
-          <WeekCalendar
-            firstDay={moment()
-              .startOf("week")
-              .add(1, "day")}
-            startTime={moment({ h: 7, m: 0 })}
-            endTime={moment({ h: 18, m: 0 })}
-            numberOfDays={5}
-            scaleHeaderTitle={"Appointments"}
-            scaleUnit={30}
-            useModal={false}
-            selectedIntervals={this.state.appointments}
-            eventComponent={AppointmentEvent}
-          />
-        </div>
-      </div>
-    );
-  };
-
   renderRegisterDoctorsScreen = () => {
     return (
       <div>
@@ -515,20 +487,19 @@ class App extends React.Component {
 
   renderBookingAppointmentScreen = () => {
     let availDocTypes = [...new Set(this.state.doctors.map(doc => doc.type))];
-    return (
+	return (
       <div>
         <form
           onSubmit={e => {
             e.preventDefault();
-            // console.log(this.state.createBookingTime);
-            // let start = moment(this.state.createBookingTime);
-            // console.log(start.format("X"));
+            console.log(this.state.createBookingTime);
             // let startunix = moment.unix(this.state.createBookingTime);
             // console.log(startunix.format("X"));
             this.setState(prevState => ({
               appointments: [
                 ...prevState.appointments,
                 {
+				  uid: this.state.createBookingUID,
                   start: moment(Number(this.state.createBookingTime)),
                   end: moment(Number(this.state.createBookingTime)).add(
                     30,
@@ -536,42 +507,19 @@ class App extends React.Component {
                   ),
                   doctor: this.state.createBookingDocName,
                   comment: this.state.createBookingComments,
-                  value: this.state.createBookingComments
+                  value: this.state.currentUsername,
                 }
               ],
               screen: "customerScreen",
               createBookingDocType: "chiropractor",
-              createBookingDocName: "",
+              createBookingDocName: "Alena",
               createBookingDate: new Date(),
               createBookingTime: moment()
                 .hour(9)
                 .format("X"),
-              createBookingComments: ""
+              createBookingComments: "",
+			  createBookingUID: prevState.createBookingUID+1
             }));
-            /*
-
-          appointments: [
-        {
-          uid: 6,
-          start: moment()
-            .hour(13)
-            .minute(0),
-          end: moment()
-            .hour(13)
-            .minute(30),
-          doctor: "Bob",
-          comment: "Knee appointment",
-          value: "Janine Doink"
-        },
-
-          createBookingDocType: "chiropractor",
-          createBookingDocName: "",
-          createBookingDate: new Date(),
-          createBookingTime: moment()
-            .hour(9)
-            .format("X"),
-          createBookingComments: ""
-          */
           }}
         >
           <div>
@@ -580,7 +528,10 @@ class App extends React.Component {
               <select
                 value={this.state.createBookingDocType}
                 onChange={event => {
-                  this.setState({ createBookingDocType: event.target.value });
+				  let firstDoc = this.state.doctors
+                  .filter(doc => doc.type === event.target.value)
+                  .map(doc => doc.name)[0];
+                  this.setState({ createBookingDocType: event.target.value, createBookingDocName: firstDoc});
                 }}
               >
                 {availDocTypes.map(type => {
@@ -650,6 +601,56 @@ class App extends React.Component {
           </div>
           <input type="submit" value="Book Appointment" />
         </form>
+		<WeekCalendar
+            firstDay={this.state.calendarDisplayWeek}
+            startTime={moment({ h: 9, m: 0 })}
+            endTime={moment({ h: 17, m: 0 })}
+            numberOfDays={7}
+            scaleHeaderTitle={this.state.createBookingDocName}
+            scaleUnit={30}
+            useModal={false}
+            selectedIntervals={
+				this.state.appointments
+				.filter(app => app.doctor === this.state.createBookingDocName || app.value === "Lunch")
+				.map(app => { let copy = Object.assign({}, app);
+							  copy.value = (app.value === this.state.currentUsername ? "You" : "Occupied");
+							  return copy;
+				})
+			}
+            eventComponent={AppointmentEvent}
+			onEventClick={event => {
+                  if(event.value === "You" && window.confirm("Delete this appointment?")){
+					  this.setState({
+						appointments: this.state.appointments.filter((app) => 
+							app.value !== this.state.currentUsername && 
+							app.start !== event.start
+						)
+					  });
+				  }
+                }
+			}
+			onIntervalSelect={event => {
+				let d = event[0].start;
+				this.setState({ createBookingDate: new Date(d.year(), d.month(), d.day()),
+								createBookingTime: moment().hour(d.hour()).minute(d.minute()).format('X')
+				});
+			  }
+			}
+          />
+		<button
+            onClick={() => {
+              this.setState(prevState => ({ calendarDisplayWeek: prevState.calendarDisplayWeek.add(-1,'week')}));
+            }}
+          >
+			Prev
+        </button>
+		<button
+            onClick={() => {
+              this.setState(prevState => ({ calendarDisplayWeek: prevState.calendarDisplayWeek.add(1,'week')}));
+            }}
+          >
+			Next
+        </button>
       </div>
     );
   };
@@ -683,17 +684,17 @@ class App extends React.Component {
           .map(a => a.start.format("X"))
       )
     ];
-    console.log(
-      "appointmentTimes pre filter: ",
-      appointmentTimes.map(a => moment.unix(Number(a)).format("LLLL"))
-    );
+    //console.log(
+    //  "appointmentTimes pre filter: ",
+    //  appointmentTimes.map(a => moment.unix(Number(a)).format("LLLL"))
+    //);
     let filteredTimeds = standardTimes.filter(
       t => !appointmentTimes.includes(t.format("X"))
     );
-    console.log(
-      "appointmentTimes post filter: ",
-      filteredTimeds.map(a => a.format("LLLL"))
-    );
+    //console.log(
+    //  "appointmentTimes post filter: ",
+    //  filteredTimeds.map(a => a.format("LLLL"))
+    //);
     return filteredTimeds;
   };
 
