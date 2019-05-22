@@ -33,6 +33,18 @@ button {
     margin: 0.3em;
 }
 
+.homeButton > button {
+    all: unset;
+    color: white;
+    border: 2px solid white;
+    padding: 0.2em;
+}
+
+.homeButton {
+    position: absolute;
+    top: 1em;
+    left: 2em;
+}
 
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",

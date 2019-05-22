@@ -153,22 +153,37 @@ class App extends React.Component {
   }
 
   render() {
+    var homeButton =
+            <div className="homeButton">
+                <button
+                class="topCorner"
+                  onClick={() => {
+                    this.setState({ screen:
+                        this.state.currentUsername === "Admin"
+                          ? "adminScreen"
+                          : "customerScreen" });
+                  }}
+                >
+                  Home
+                </button>
+              </div>;
+
     if (this.state.screen === "Login") {
       return <div>{this.renderLoginScreen()}</div>;
     } else if (this.state.screen === "createNewUser") {
-      return <div>{this.renderCreateNewUserScreen()}</div>;
+      return <div>{homeButton}{this.renderCreateNewUserScreen()}</div>;
     } else if (this.state.screen === "adminScreen") {
-      return <div>{this.renderAdminScreen()}</div>;
+      return <div>{homeButton}{this.renderAdminScreen()}</div>;
     } else if (this.state.screen === "customerScreen") {
-      return <div>{this.renderUserHomeScreen()}</div>;
+      return <div>{homeButton}{this.renderUserHomeScreen()}</div>;
     } else if (this.state.screen === "registerDoctorsScreen") {
-      return <div>{this.renderRegisterDoctorsScreen()}</div>;
+      return <div>{homeButton}{this.renderRegisterDoctorsScreen()}</div>;
     } else if (this.state.screen === "editUser") {
-      return <div>{this.editUserScreen()}</div>;
+      return <div>{homeButton}{this.editUserScreen()}</div>;
     } else if (this.state.screen === "bookAppointment") {
-      return <div>{this.renderBookingAppointmentScreen()}</div>;
+      return <div>{homeButton}{this.renderBookingAppointmentScreen()}</div>;
     } else if (this.state.screen === "editAppointment") {
-      return <div>{this.editBookingAppointmentScreen()}</div>;
+      return <div>{homeButton}{this.editBookingAppointmentScreen()}</div>;
     }
   }
 
