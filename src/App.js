@@ -3,7 +3,6 @@ import "./App.css";
 import AppointmentEvent from "./appointmentEvent";
 
 import WeekCalendar from "react-week-calendar";
-import HeaderCell from 'react-week-calendar';
 import "react-week-calendar/dist/style.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -124,8 +123,7 @@ class App extends React.Component {
       createBookingDocName: "Alena",
       createBookingDate: new Date(),
       createBookingTime: moment()
-        .hour(9)
-        .format("X"),
+        .hour(9).minute(0),
       createBookingComments: "",
 	  calendarDisplayWeek : moment()
 	  .startOf("week")
@@ -492,19 +490,18 @@ class App extends React.Component {
         <form
           onSubmit={e => {
             e.preventDefault();
-            console.log(this.state.createBookingTime);
-            // let startunix = moment.unix(this.state.createBookingTime);
-            // console.log(startunix.format("X"));
             this.setState(prevState => ({
               appointments: [
                 ...prevState.appointments,
                 {
 				  uid: this.state.createBookingUID,
-                  start: moment(Number(this.state.createBookingTime)),
-                  end: moment(Number(this.state.createBookingTime)).add(
-                    30,
-                    "minute"
-                  ),
+                  start: moment(this.state.createBookingDate)
+						.hour(this.state.createBookingTime.hour())
+						.minute(this.state.createBookingTime.minute()),
+                  end: moment(this.state.createBookingDate)
+						.hour(this.state.createBookingTime.hour())
+						.minute(this.state.createBookingTime.minute())
+						.add(30, "minute"),
                   doctor: this.state.createBookingDocName,
                   comment: this.state.createBookingComments,
                   value: this.state.currentUsername,
@@ -515,8 +512,7 @@ class App extends React.Component {
               createBookingDocName: "Alena",
               createBookingDate: new Date(),
               createBookingTime: moment()
-                .hour(9)
-                .format("X"),
+                .hour(9).minute(0),
               createBookingComments: "",
 			  createBookingUID: prevState.createBookingUID+1
             }));
@@ -575,16 +571,7 @@ class App extends React.Component {
           </div>
           <div>
             <label>
-              Time
-              <select
-                value={this.state.createBookingTime}
-                onChange={event => {
-                  console.log(event.target.value);
-                  this.setState({ createBookingTime: event.target.value });
-                }}
-              >
-                {this.renderBookingTimeOptions()}
-              </select>
+              Time <b>{this.state.createBookingTime.format("LT")}</b>
             </label>
           </div>
           <div>
@@ -612,27 +599,35 @@ class App extends React.Component {
             selectedIntervals={
 				this.state.appointments
 				.filter(app => app.doctor === this.state.createBookingDocName || app.value === "Lunch")
-				.map(app => { let copy = Object.assign({}, app);
-							  copy.value = (app.value === this.state.currentUsername ? "You" : "Occupied");
-							  return copy;
+				.map(app => { return {
+							  uid: app.uid,
+							  start: app.start,
+							  end: app.end,
+							  time: app.start,
+							  doctor: app.doctor,
+							  comment: app.comment,
+							  value: (app.value === this.state.currentUsername ? "You" : "Occupied")
+							};
 				})
 			}
             eventComponent={AppointmentEvent}
 			onEventClick={event => {
-                  if(event.value === "You" && window.confirm("Delete this appointment?")){
+                  if(event.value === "You" &&
+					window.confirm("Delete this appointment?")){
 					  this.setState({
 						appointments: this.state.appointments.filter((app) => 
-							app.value !== this.state.currentUsername && 
-							app.start !== event.start
+							app.value !== this.state.currentUsername || 
+							app.start !== event.time
 						)
 					  });
+					  
 				  }
                 }
 			}
 			onIntervalSelect={event => {
 				let d = event[0].start;
-				this.setState({ createBookingDate: new Date(d.year(), d.month(), d.day()),
-								createBookingTime: moment().hour(d.hour()).minute(d.minute()).format('X')
+				this.setState({ createBookingDate: new Date(d.year(), d.month(), d.date()),
+								createBookingTime: moment().hour(d.hour()).minute(d.minute())
 				});
 			  }
 			}
