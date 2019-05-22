@@ -146,6 +146,7 @@ class App extends React.Component {
           .add(i, "day")
           .hour(12)
           .minutes(30),
+		doctor: "",
         value: "Lunch"
       });
     }
@@ -354,24 +355,46 @@ class App extends React.Component {
           </button>
         </div>
         <div>
-          <WeekCalendar
-            firstDay={moment()
-              .startOf("week")
-              .add(1, "day")}
-            startTime={moment({ h: 7, m: 0 })}
-            endTime={moment({ h: 18, m: 0 })}
-            numberOfDays={5}
-            scaleHeaderTitle={"Appointments"}
-            scaleUnit={30}
-            useModal={false}
-            selectedIntervals={this.state.appointments}
-            eventComponent={AppointmentEvent}
-          />
+		<button
+            onClick={() => {
+              this.setState(prevState => ({ calendarDisplayWeek: prevState.calendarDisplayWeek.add(-1,'week')}));
+            }}
+          >
+			Prev
+        </button>
+		<button
+            onClick={() => {
+              this.setState(prevState => ({ calendarDisplayWeek: prevState.calendarDisplayWeek.add(1,'week')}));
+            }}
+          >
+			Next
+        </button>
         </div>
+		{this.renderAllCalendars()}
       </div>
     );
   };
 
+  renderAllCalendars = () => {
+	  return this.state.doctors.map( doc => {
+		 return (
+		 <div>
+		 <WeekCalendar
+            firstDay={this.state.calendarDisplayWeek}
+            startTime={moment({ h: 9, m: 0 })}
+            endTime={moment({ h: 17, m: 0 })}
+            numberOfDays={7}
+            scaleHeaderTitle={doc.name}
+            scaleUnit={30}
+            useModal={true}
+            selectedIntervals={
+				this.state.appointments.filter(app => app.doctor === doc.name || app.value === "Lunch")
+			}
+            eventComponent={AppointmentEvent}
+          /> 
+		  </div>)
+	  });
+  }
   renderRegisterDoctorsScreen = () => {
     return (
       <div>
@@ -605,7 +628,7 @@ class App extends React.Component {
 							  end: app.end,
 							  time: app.start,
 							  doctor: app.doctor,
-							  comment: app.comment,
+							  comment: (app.value === this.state.currentUsername ? app.comment : ""),
 							  value: (app.value === this.state.currentUsername ? "You" : "Occupied")
 							};
 				})
