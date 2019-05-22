@@ -540,7 +540,7 @@ class App extends React.Component {
     let availDocTypes = [...new Set(this.state.doctors.map(doc => doc.type))];
 	return (
       <div>
-      <h1>Edit Appointment</h1>
+      <h1>Book Appointment</h1>
       <div className="formWrap">
         <form
           onSubmit={e => {
@@ -923,6 +923,7 @@ class App extends React.Component {
               <select
                 value={tempCurApp.doctor}
                 onChange={event => {
+                    tempCurApp.doctor = event.target.value;
                   this.setState({ createBookingDocName: event.target.value });
                 }}
               >
