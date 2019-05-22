@@ -487,6 +487,7 @@ class App extends React.Component {
 
   renderUserHomeScreen = () => {
     var editApp = "";
+    var curName = this.state.users[this.state.activeUser].name;
     this.state.appointments.forEach(app => {
       if (app.value === this.state.currentUsername) {
           editApp =
@@ -503,7 +504,7 @@ class App extends React.Component {
   })
     return (
       <div>
-      <h1>Welcome, {this.state.currentUsername}</h1>
+      <h1>Welcome, {curName}</h1>
         <div>
           <button
             onClick={() => {
@@ -624,7 +625,7 @@ class App extends React.Component {
               Comments
               <input
                 type="text"
-                value={this.state.createBookingComments}
+                value=""
                 onChange={event =>
                   this.setState({ createBookingComments: event.target.value })
                 }
