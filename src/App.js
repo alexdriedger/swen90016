@@ -176,6 +176,7 @@ class App extends React.Component {
     return (
       <div className="LoginScreen">
       <h1>Geelong Health Care Centre</h1>
+      <div className="formWrap">
         <form
           onSubmit={event => {
             this.setState({ activeUser: 0 });
@@ -245,6 +246,7 @@ class App extends React.Component {
             Sign Up New User
           </button>
         </div>
+        </div>
       </div>
     );
   };
@@ -253,6 +255,7 @@ class App extends React.Component {
     return (
       <div>
         <h1>Create a new user</h1>
+        <div className="formWrap">
         <form
           onSubmit={event => {
             event.preventDefault();
@@ -339,6 +342,7 @@ class App extends React.Component {
           </div>
           <input type="submit" value="Register" />
         </form>
+        </div>
       </div>
     );
   };
@@ -403,6 +407,7 @@ class App extends React.Component {
     return (
       <div>
         <h1>Add a new Health Care Professional</h1>
+        <div className="formWrap">
         <form
           onSubmit={event => {
             event.preventDefault();
@@ -416,7 +421,7 @@ class App extends React.Component {
                   price: this.state.newDocPrice
                 }
               ],
-              screen: "homeScreen",
+              screen: "adminScreen",
               newUserName: "",
               newDocType: "",
               newUserEmail: "",
@@ -481,6 +486,7 @@ class App extends React.Component {
           </div>
           <input type="submit" value="Register" />
         </form>
+        </div>
       </div>
     );
   };
@@ -505,6 +511,7 @@ class App extends React.Component {
     return (
       <div>
       <h1>Welcome, {curName}</h1>
+      <div className="formWrap">
         <div>
           <button
             onClick={() => {
@@ -520,10 +527,11 @@ class App extends React.Component {
               this.setState({ screen: "bookAppointment" });
             }}
           >
-            Book an Apppointment!
+            Book An Apppointment
           </button>
         </div>
         {editApp}
+        </div>
       </div>
     );
   };
@@ -533,6 +541,7 @@ class App extends React.Component {
 	return (
       <div>
       <h1>Edit Appointment</h1>
+      <div className="formWrap">
         <form
           onSubmit={e => {
             e.preventDefault();
@@ -625,15 +634,16 @@ class App extends React.Component {
               Comments
               <input
                 type="text"
-                value=""
-                onChange={event =>
+                value={this.state.createBookingComments}
+                onChange={event => {
                   this.setState({ createBookingComments: event.target.value })
-                }
+              }}
               />
             </label>
           </div>
           <input type="submit" value="Book Appointment" />
         </form>
+        </div>
 		<WeekCalendar
             firstDay={this.state.calendarDisplayWeek}
             startTime={moment({ h: 9, m: 0 })}
@@ -745,6 +755,7 @@ class App extends React.Component {
     return (
       <div>
         <h1>Edit User Details</h1>
+        <div className="formWrap">
         <form
           onSubmit={event => {
             event.preventDefault();
@@ -844,6 +855,7 @@ class App extends React.Component {
           </div>
           <input type="submit" value="Save" />
         </form>
+        </div>
       </div>
     );
   };
@@ -866,6 +878,7 @@ class App extends React.Component {
 	return (
       <div>
       <h1>Edit Appointment</h1>
+      <div className="formWrap">
         <form
           onSubmit={e => {
             e.preventDefault();
@@ -956,6 +969,7 @@ class App extends React.Component {
           </div>
           <input type="submit" value="Save Appointment" />
         </form>
+        </div>
 		<WeekCalendar
             firstDay={this.state.calendarDisplayWeek}
             startTime={moment({ h: 9, m: 0 })}
