@@ -8,134 +8,144 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-datepicker/dist/react-datepicker-cssmodules.css";
-import mailgun from "mailgun-js";
 import * as emailjs from "emailjs-com";
 const { emailjs_userid } = require("./credentials.json");
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      screen: "Login",
-      users: [
-        {
-          username: "Admin",
-          password: "Secret",
-          name: "",
-          address: "",
-          contactNumber: ""
-        },
-        {
-          username: "test",
-          password: "testing",
-          name: "Test McTester",
-          address: "123 Street",
-          contactNumber: "123-456-7890"
-        }
-      ],
-      doctors: [
-        {
-          type: "chiropractor",
-          name: "Alena",
-          email: "alena@blackhole.com",
-          price: 150
-        },
-        {
-          type: "chiropractor",
-          name: "Sarah",
-          email: "sarah@blackhole.com",
-          price: 80
-        },
-        {
-          type: "podiatrist",
-          name: "Jeff",
-          email: "jeff@blackhole.com",
-          price: 100
-        },
-        {
-          type: "podiatrist",
-          name: "Bob",
-          email: "bob@blackhole.com",
-          price: 110
-        }
-      ],
-      appointments: [
-        {
-          uid: 8,
-          start: moment()
-            .hour(13)
-            .minute(0),
-          end: moment()
-            .hour(13)
-            .minute(30),
-          doctor: "Bob",
-          comment: "Knee appointment",
-          value: "Janine Doink"
-        },
-        {
-          uid: 9,
-          start: moment()
-            .hour(15)
-            .minute(0),
-          end: moment()
-            .hour(15)
-            .minute(30),
-          doctor: "Bob",
-          comment: "Arms and stuff",
-          value: "val2"
-        },
-        {
-          uid: 10,
-          start: moment()
-            .add(1, "day")
-            .hour(10)
-            .minute(0),
-          end: moment()
-            .add(1, "day")
-            .hour(10)
-            .minute(30),
-          doctor: "Alena",
-          comment: "Doctory things",
-          value: "val3"
-        },
-        {
-          uid: 11,
-          start: moment()
-            .hour(11)
-            .minute(30)
-            .add(1, "week"),
-          end: moment()
-            .hour(12)
-            .minute(0)
-            .add(1, "week"),
-          doctor: "Alena",
-          comment: "Stuff & things",
-          value: "val4"
-        }
-      ],
-      currentUsername: "",
-      currentPassword: "",
-      loggedIn: false,
-      newUserName: "",
-      newUserAddress: "",
-      newUserContactNumber: "",
-      newUserEmail: "",
-      newUserPassword: "",
-      newDocType: "",
-      newDocPrice: "",
-      activeUser: 0,
-      createBookingDocType: "chiropractor",
-      createBookingDocName: "Alena",
-      createBookingDate: new Date(),
-      createBookingTime: moment()
-        .hour(9)
-        .minute(0),
-      createBookingComments: "",
-      calendarDisplayWeek: moment()
-        .startOf("week")
-        .add(1, "day"),
-      createBookingUID: 12
-    };
+    var defaultState = JSON.parse(window.localStorage.getItem("state"));
+    if (
+      defaultState === null ||
+      (Object.entries(defaultState).length === 0 &&
+        defaultState.constructor === Object)
+    ) {
+      console.log("State was empty, using default state");
+
+      this.state = {
+        screen: "Login",
+        users: [
+          {
+            username: "Admin",
+            password: "Secret",
+            name: "",
+            address: "",
+            contactNumber: ""
+          },
+          {
+            username: "test",
+            password: "testing",
+            name: "Test McTester",
+            address: "123 Street",
+            contactNumber: "123-456-7890"
+          }
+        ],
+        doctors: [
+          {
+            type: "chiropractor",
+            name: "Alena",
+            email: "alena@blackhole.com",
+            price: 150
+          },
+          {
+            type: "chiropractor",
+            name: "Sarah",
+            email: "sarah@blackhole.com",
+            price: 80
+          },
+          {
+            type: "podiatrist",
+            name: "Jeff",
+            email: "jeff@blackhole.com",
+            price: 100
+          },
+          {
+            type: "podiatrist",
+            name: "Bob",
+            email: "bob@blackhole.com",
+            price: 110
+          }
+        ],
+        appointments: [
+          {
+            uid: 8,
+            start: moment()
+              .hour(13)
+              .minute(0),
+            end: moment()
+              .hour(13)
+              .minute(30),
+            doctor: "Bob",
+            comment: "Knee appointment",
+            value: "Janine Doink"
+          },
+          {
+            uid: 9,
+            start: moment()
+              .hour(15)
+              .minute(0),
+            end: moment()
+              .hour(15)
+              .minute(30),
+            doctor: "Bob",
+            comment: "Arms and stuff",
+            value: "val2"
+          },
+          {
+            uid: 10,
+            start: moment()
+              .add(1, "day")
+              .hour(10)
+              .minute(0),
+            end: moment()
+              .add(1, "day")
+              .hour(10)
+              .minute(30),
+            doctor: "Alena",
+            comment: "Doctory things",
+            value: "val3"
+          },
+          {
+            uid: 11,
+            start: moment()
+              .hour(11)
+              .minute(30)
+              .add(1, "week"),
+            end: moment()
+              .hour(12)
+              .minute(0)
+              .add(1, "week"),
+            doctor: "Alena",
+            comment: "Stuff & things",
+            value: "val4"
+          }
+        ],
+        currentUsername: "",
+        currentPassword: "",
+        loggedIn: false,
+        newUserName: "",
+        newUserAddress: "",
+        newUserContactNumber: "",
+        newUserEmail: "",
+        newUserPassword: "",
+        newDocType: "",
+        newDocPrice: "",
+        activeUser: 0,
+        createBookingDocType: "chiropractor",
+        createBookingDocName: "Alena",
+        createBookingDate: new Date(),
+        createBookingTime: moment()
+          .hour(9)
+          .minute(0),
+        createBookingComments: "",
+        calendarDisplayWeek: moment()
+          .startOf("week")
+          .add(1, "day"),
+        createBookingUID: 12
+      };
+    } else {
+      this.state = defaultState;
+    }
     this.setupAppointments();
     // this.sendEmail();
   }
@@ -160,8 +170,28 @@ class App extends React.Component {
   }
 
   render() {
+    var stateString = JSON.stringify(this.state);
+    window.localStorage.setItem("state", stateString);
+
     var homeButton = (
       <div className="homeButton">
+        <button
+          class="topCorner"
+          onClick={() => {
+            this.setState({
+              screen: "Login",
+              currentUsername: "",
+              currentPassword: ""
+            });
+          }}
+        >
+          Home
+        </button>
+      </div>
+    );
+
+    var logOutButton = (
+      <div className="logOutButton">
         <button
           class="topCorner"
           onClick={() => {
@@ -173,7 +203,7 @@ class App extends React.Component {
             });
           }}
         >
-          Home
+          Log Out
         </button>
       </div>
     );
@@ -513,9 +543,9 @@ class App extends React.Component {
                   }
                 />
                 <datalist id="data">
-                  <option value="Podiatrist" />
-                  <option value="Chiropractor" />
-                  <option value="Naturopath" />
+                  <option value="podiatrist" />
+                  <option value="chiropractor" />
+                  <option value="naturopath" />
                 </datalist>
               </label>
             </div>

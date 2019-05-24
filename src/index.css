@@ -46,6 +46,19 @@ button {
     left: 2em;
 }
 
+.logOutButton {
+    position: absolute;
+    top: 1em;
+    right: 2em;
+}
+
+.logOutButton > button {
+    all: unset;
+    color: white;
+    border: 2px solid white;
+    padding: 0.2em;
+}
+
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;

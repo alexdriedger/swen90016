@@ -5,6 +5,7 @@
   "dependencies": {
     "dayz": "^2.4.0",
     "emailjs-com": "^2.3.2",
+    "file-saver": "^2.0.2",
     "mailgun-js": "^0.22.0",
     "mailgun.js": "^2.0.1",
     "moment": "^2.24.0",
