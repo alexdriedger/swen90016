@@ -8,6 +8,9 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-datepicker/dist/react-datepicker-cssmodules.css";
+import mailgun from "mailgun-js";
+import * as emailjs from "emailjs-com";
+const { emailjs_userid } = require("./credentials.json");
 
 class App extends React.Component {
   constructor(props) {
@@ -25,7 +28,7 @@ class App extends React.Component {
         {
           username: "test",
           password: "testing",
-          name: "Bob",
+          name: "Test McTester",
           address: "123 Street",
           contactNumber: "123-456-7890"
         }
@@ -99,10 +102,12 @@ class App extends React.Component {
           uid: 11,
           start: moment()
             .hour(11)
-            .minute(30).add(1,'week'),
+            .minute(30)
+            .add(1, "week"),
           end: moment()
             .hour(12)
-            .minute(0).add(1,'week'),
+            .minute(0)
+            .add(1, "week"),
           doctor: "Alena",
           comment: "Stuff & things",
           value: "val4"
@@ -123,14 +128,16 @@ class App extends React.Component {
       createBookingDocName: "Alena",
       createBookingDate: new Date(),
       createBookingTime: moment()
-        .hour(9).minute(0),
+        .hour(9)
+        .minute(0),
       createBookingComments: "",
-	  calendarDisplayWeek : moment()
-	  .startOf("week")
-      .add(1, "day"),
-	  createBookingUID: 12,
+      calendarDisplayWeek: moment()
+        .startOf("week")
+        .add(1, "day"),
+      createBookingUID: 12
     };
     this.setupAppointments();
+    // this.sendEmail();
   }
 
   setupAppointments() {
@@ -146,121 +153,159 @@ class App extends React.Component {
           .add(i, "day")
           .hour(12)
           .minutes(30),
-		doctor: "",
+        doctor: "",
         value: "Lunch"
       });
     }
   }
 
   render() {
-    var homeButton =
-            <div className="homeButton">
-                <button
-                class="topCorner"
-                  onClick={() => {
-                    this.setState({ screen:
-                        this.state.currentUsername === "Admin"
-                          ? "adminScreen"
-                          : "customerScreen" });
-                  }}
-                >
-                  Home
-                </button>
-              </div>;
+    var homeButton = (
+      <div className="homeButton">
+        <button
+          class="topCorner"
+          onClick={() => {
+            this.setState({
+              screen:
+                this.state.currentUsername === "Admin"
+                  ? "adminScreen"
+                  : "customerScreen"
+            });
+          }}
+        >
+          Home
+        </button>
+      </div>
+    );
 
     if (this.state.screen === "Login") {
       return <div>{this.renderLoginScreen()}</div>;
     } else if (this.state.screen === "createNewUser") {
-      return <div>{homeButton}{this.renderCreateNewUserScreen()}</div>;
+      return (
+        <div>
+          {homeButton}
+          {this.renderCreateNewUserScreen()}
+        </div>
+      );
     } else if (this.state.screen === "adminScreen") {
-      return <div>{homeButton}{this.renderAdminScreen()}</div>;
+      return (
+        <div>
+          {homeButton}
+          {this.renderAdminScreen()}
+        </div>
+      );
     } else if (this.state.screen === "customerScreen") {
-      return <div>{homeButton}{this.renderUserHomeScreen()}</div>;
+      return (
+        <div>
+          {homeButton}
+          {this.renderUserHomeScreen()}
+        </div>
+      );
     } else if (this.state.screen === "registerDoctorsScreen") {
-      return <div>{homeButton}{this.renderRegisterDoctorsScreen()}</div>;
+      return (
+        <div>
+          {homeButton}
+          {this.renderRegisterDoctorsScreen()}
+        </div>
+      );
     } else if (this.state.screen === "editUser") {
-      return <div>{homeButton}{this.editUserScreen()}</div>;
+      return (
+        <div>
+          {homeButton}
+          {this.editUserScreen()}
+        </div>
+      );
     } else if (this.state.screen === "bookAppointment") {
-      return <div>{homeButton}{this.renderBookingAppointmentScreen()}</div>;
+      return (
+        <div>
+          {homeButton}
+          {this.renderBookingAppointmentScreen()}
+        </div>
+      );
     } else if (this.state.screen === "editAppointment") {
-      return <div>{homeButton}{this.editBookingAppointmentScreen()}</div>;
+      return (
+        <div>
+          {homeButton}
+          {this.editBookingAppointmentScreen()}
+        </div>
+      );
     }
   }
 
   renderLoginScreen = () => {
     return (
       <div className="LoginScreen">
-      <h1>Geelong Health Care Centre</h1>
-      <div className="formWrap">
-        <form
-          onSubmit={event => {
-            this.setState({ activeUser: 0 });
-            var i = -1;
-            this.state.users.forEach(user => {
-              i++;
-              console.log(i);
-              if (
-                this.state.currentUsername === user.username &&
-                this.state.currentPassword === user.password
-              ) {
-                this.setState({
-                  loggedIn: true,
-                  screen:
-                    this.state.currentUsername === "Admin"
-                      ? "adminScreen"
-                      : "customerScreen",
-                  activeUser: i
-                });
-                console.log("Loggin in successfully");
-              }
-            });
-            if (!this.state.loggedIn) {
-              console.log("Incorrect username/password");
-            }
-            event.preventDefault();
-          }}
-        >
-          <div>
-            <label>
-              Username:
-              <input
-                type="text"
-                value={this.state.currentUsername}
-                onChange={event =>
-                  this.setState({ currentUsername: event.target.value })
+        <h1>Geelong Health Care Centre</h1>
+        <div className="formWrap">
+          <form
+            onSubmit={event => {
+              this.setState({ activeUser: 0 });
+              var i = -1;
+              this.state.users.forEach(user => {
+                i++;
+                console.log(i);
+                if (
+                  this.state.currentUsername === user.username &&
+                  this.state.currentPassword === user.password
+                ) {
+                  this.setState({
+                    loggedIn: true,
+                    screen:
+                      this.state.currentUsername === "Admin"
+                        ? "adminScreen"
+                        : "customerScreen",
+                    activeUser: i
+                  });
+                  console.log("Loggin in successfully");
                 }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Password:
-              <input
-                type="text"
-                value={this.state.currentPassword}
-                onChange={event =>
-                  this.setState({ currentPassword: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <input type="submit" value="Log In" />
-        </form>
-        <div>
-          <button
-            style={{ marginTop: 32 }}
-            onClick={e => {
-              e.preventDefault();
-              this.setState({
-                screen: "createNewUser",
-                currentUsername: "",
-                currentPassword: ""
               });
+              if (!this.state.loggedIn) {
+                console.log("Incorrect username/password");
+              }
+              event.preventDefault();
             }}
           >
-            Sign Up New User
-          </button>
-        </div>
+            <div>
+              <label>
+                Username:
+                <input
+                  type="text"
+                  value={this.state.currentUsername}
+                  onChange={event =>
+                    this.setState({ currentUsername: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Password:
+                <input
+                  type="text"
+                  value={this.state.currentPassword}
+                  onChange={event =>
+                    this.setState({ currentPassword: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <input type="submit" value="Log In" />
+          </form>
+          <div>
+            <button
+              style={{ marginTop: 32 }}
+              onClick={e => {
+                e.preventDefault();
+                this.setState({
+                  screen: "createNewUser",
+                  currentUsername: "",
+                  currentPassword: ""
+                });
+              }}
+            >
+              Sign Up New User
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -271,92 +316,92 @@ class App extends React.Component {
       <div>
         <h1>Create a new user</h1>
         <div className="formWrap">
-        <form
-          onSubmit={event => {
-            event.preventDefault();
-            this.setState(prevState => ({
-              users: [
-                ...prevState.users,
-                {
-                  username: this.state.newUserEmail,
-                  password: this.state.newUserPassword,
-                  name: this.state.newUserName,
-                  address: this.state.newUserAddress,
-                  contactNumber: this.state.newUserContactNumber
-                }
-              ],
-              screen: "Login",
-              newUserName: "",
-              newUserAddress: "",
-              newUserContactNumber: "",
-              newUserEmail: "",
-              newUserPassword: ""
-            }));
-            console.log("Added new user");
-          }}
-        >
-          <div>
-            <label>
-              Name
-              <input
-                type="text"
-                value={this.state.newUserName}
-                onChange={event =>
-                  this.setState({ newUserName: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Home Address
-              <input
-                type="text"
-                value={this.state.newUserAddress}
-                onChange={event =>
-                  this.setState({ newUserAddress: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Contact Phone Number
-              <input
-                type="text"
-                value={this.state.newUserContactNumber}
-                onChange={event =>
-                  this.setState({ newUserContactNumber: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Email
-              <input
-                type="text"
-                value={this.state.newUserEmail}
-                onChange={event =>
-                  this.setState({ newUserEmail: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Password
-              <input
-                type="text"
-                value={this.state.newUserPassword}
-                onChange={event =>
-                  this.setState({ newUserPassword: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <input type="submit" value="Register" />
-        </form>
+          <form
+            onSubmit={event => {
+              event.preventDefault();
+              this.setState(prevState => ({
+                users: [
+                  ...prevState.users,
+                  {
+                    username: this.state.newUserEmail,
+                    password: this.state.newUserPassword,
+                    name: this.state.newUserName,
+                    address: this.state.newUserAddress,
+                    contactNumber: this.state.newUserContactNumber
+                  }
+                ],
+                screen: "Login",
+                newUserName: "",
+                newUserAddress: "",
+                newUserContactNumber: "",
+                newUserEmail: "",
+                newUserPassword: ""
+              }));
+              console.log("Added new user");
+            }}
+          >
+            <div>
+              <label>
+                Name
+                <input
+                  type="text"
+                  value={this.state.newUserName}
+                  onChange={event =>
+                    this.setState({ newUserName: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Home Address
+                <input
+                  type="text"
+                  value={this.state.newUserAddress}
+                  onChange={event =>
+                    this.setState({ newUserAddress: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Contact Phone Number
+                <input
+                  type="text"
+                  value={this.state.newUserContactNumber}
+                  onChange={event =>
+                    this.setState({ newUserContactNumber: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Email
+                <input
+                  type="text"
+                  value={this.state.newUserEmail}
+                  onChange={event =>
+                    this.setState({ newUserEmail: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Password
+                <input
+                  type="text"
+                  value={this.state.newUserPassword}
+                  onChange={event =>
+                    this.setState({ newUserPassword: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <input type="submit" value="Register" />
+          </form>
         </div>
       </div>
     );
@@ -377,31 +422,41 @@ class App extends React.Component {
           </button>
         </div>
         <div>
-		<button
+          <button
             onClick={() => {
-              this.setState(prevState => ({ calendarDisplayWeek: prevState.calendarDisplayWeek.add(-1,'week')}));
+              this.setState(prevState => ({
+                calendarDisplayWeek: prevState.calendarDisplayWeek.add(
+                  -1,
+                  "week"
+                )
+              }));
             }}
           >
-			Prev
-        </button>
-		<button
+            Prev
+          </button>
+          <button
             onClick={() => {
-              this.setState(prevState => ({ calendarDisplayWeek: prevState.calendarDisplayWeek.add(1,'week')}));
+              this.setState(prevState => ({
+                calendarDisplayWeek: prevState.calendarDisplayWeek.add(
+                  1,
+                  "week"
+                )
+              }));
             }}
           >
-			Next
-        </button>
+            Next
+          </button>
         </div>
-		{this.renderAllCalendars()}
+        {this.renderAllCalendars()}
       </div>
     );
   };
 
   renderAllCalendars = () => {
-	  return this.state.doctors.map( doc => {
-		 return (
-		 <div>
-		 <WeekCalendar
+    return this.state.doctors.map(doc => {
+      return (
+        <div>
+          <WeekCalendar
             firstDay={this.state.calendarDisplayWeek}
             startTime={moment({ h: 9, m: 0 })}
             endTime={moment({ h: 17, m: 0 })}
@@ -409,98 +464,99 @@ class App extends React.Component {
             scaleHeaderTitle={doc.name}
             scaleUnit={30}
             useModal={true}
-            selectedIntervals={
-				this.state.appointments.filter(app => app.doctor === doc.name || app.value === "Lunch")
-			}
+            selectedIntervals={this.state.appointments.filter(
+              app => app.doctor === doc.name || app.value === "Lunch"
+            )}
             eventComponent={AppointmentEvent}
           />
-		  </div>)
-	  });
-  }
+        </div>
+      );
+    });
+  };
 
   renderRegisterDoctorsScreen = () => {
     return (
       <div>
         <h1>Add a new Health Care Professional</h1>
         <div className="formWrap">
-        <form
-          onSubmit={event => {
-            event.preventDefault();
-            this.setState(prevState => ({
-              doctors: [
-                ...prevState.doctors,
-                {
-                  type: this.state.newDocType,
-                  name: this.state.newUserName,
-                  email: this.state.newUserEmail,
-                  price: this.state.newDocPrice
-                }
-              ],
-              screen: "adminScreen",
-              newUserName: "",
-              newDocType: "",
-              newUserEmail: "",
-              newDocPrice: ""
-            }));
-            console.log("Added new doctor");
-          }}
-        >
-          <div>
-            <label>
-              Type
-              <input
-                type="text"
-                value={this.state.newDocType}
-                list="data"
-                onChange={event =>
-                  this.setState({ newDocType: event.target.value })
-                }
-              />
-              <datalist id="data">
-                <option value="Podiatrist" />
-                <option value="Chiropractor" />
-                <option value="Naturopath" />
-              </datalist>
-            </label>
-          </div>
-          <div>
-            <label>
-              Name
-              <input
-                type="text"
-                value={this.state.newUserName}
-                onChange={event =>
-                  this.setState({ newUserName: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Email
-              <input
-                type="text"
-                value={this.state.newUserEmail}
-                onChange={event =>
-                  this.setState({ newUserEmail: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Cost Per Hour
-              <input
-                type="text"
-                value={this.state.newDocPrice}
-                onChange={event =>
-                  this.setState({ newDocPrice: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <input type="submit" value="Register" />
-        </form>
+          <form
+            onSubmit={event => {
+              event.preventDefault();
+              this.setState(prevState => ({
+                doctors: [
+                  ...prevState.doctors,
+                  {
+                    type: this.state.newDocType,
+                    name: this.state.newUserName,
+                    email: this.state.newUserEmail,
+                    price: this.state.newDocPrice
+                  }
+                ],
+                screen: "adminScreen",
+                newUserName: "",
+                newDocType: "",
+                newUserEmail: "",
+                newDocPrice: ""
+              }));
+              console.log("Added new doctor");
+            }}
+          >
+            <div>
+              <label>
+                Type
+                <input
+                  type="text"
+                  value={this.state.newDocType}
+                  list="data"
+                  onChange={event =>
+                    this.setState({ newDocType: event.target.value })
+                  }
+                />
+                <datalist id="data">
+                  <option value="Podiatrist" />
+                  <option value="Chiropractor" />
+                  <option value="Naturopath" />
+                </datalist>
+              </label>
+            </div>
+            <div>
+              <label>
+                Name
+                <input
+                  type="text"
+                  value={this.state.newUserName}
+                  onChange={event =>
+                    this.setState({ newUserName: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Email
+                <input
+                  type="text"
+                  value={this.state.newUserEmail}
+                  onChange={event =>
+                    this.setState({ newUserEmail: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Cost Per Hour
+                <input
+                  type="text"
+                  value={this.state.newDocPrice}
+                  onChange={event =>
+                    this.setState({ newDocPrice: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <input type="submit" value="Register" />
+          </form>
         </div>
       </div>
     );
@@ -511,7 +567,7 @@ class App extends React.Component {
     var curName = this.state.users[this.state.activeUser].name;
     this.state.appointments.forEach(app => {
       if (app.value === this.state.currentUsername) {
-          editApp =
+        editApp = (
           <div>
             <button
               onClick={() => {
@@ -520,32 +576,33 @@ class App extends React.Component {
             >
               Edit / Cancel Your Apppointment
             </button>
-          </div>;
+          </div>
+        );
       }
-  })
+    });
     return (
       <div>
-      <h1>Welcome, {curName}</h1>
-      <div className="formWrap">
-        <div>
-          <button
-            onClick={() => {
-              this.setState({ screen: "editUser" });
-            }}
-          >
-            Edit User Details
-          </button>
-        </div>
-        <div>
-          <button
-            onClick={() => {
-              this.setState({ screen: "bookAppointment" });
-            }}
-          >
-            Book An Apppointment
-          </button>
-        </div>
-        {editApp}
+        <h1>Welcome, {curName}</h1>
+        <div className="formWrap">
+          <div>
+            <button
+              onClick={() => {
+                this.setState({ screen: "editUser" });
+              }}
+            >
+              Edit User Details
+            </button>
+          </div>
+          <div>
+            <button
+              onClick={() => {
+                this.setState({ screen: "bookAppointment" });
+              }}
+            >
+              Book An Apppointment
+            </button>
+          </div>
+          {editApp}
         </div>
       </div>
     );
@@ -553,169 +610,222 @@ class App extends React.Component {
 
   renderBookingAppointmentScreen = () => {
     let availDocTypes = [...new Set(this.state.doctors.map(doc => doc.type))];
-	return (
+    return (
       <div>
-      <h1>Book Appointment</h1>
-      <div className="formWrap">
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            this.setState(prevState => ({
-              appointments: [
-                ...prevState.appointments,
-                {
-				  uid: this.state.createBookingUID,
-                  start: moment(this.state.createBookingDate)
-						.hour(this.state.createBookingTime.hour())
-						.minute(this.state.createBookingTime.minute()),
-                  end: moment(this.state.createBookingDate)
-						.hour(this.state.createBookingTime.hour())
-						.minute(this.state.createBookingTime.minute())
-						.add(30, "minute"),
-                  doctor: this.state.createBookingDocName,
-                  comment: this.state.createBookingComments,
-                  value: this.state.currentUsername,
-                }
-              ],
-              screen: "customerScreen",
-              //createBookingDocType: "podiatrist",
-              //createBookingDocName: "Alena",
-              //createBookingDate: new Date(),
-              //createBookingTime: moment()
+        <h1>Book Appointment</h1>
+        <div className="formWrap">
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              this.setState(prevState => ({
+                appointments: [
+                  ...prevState.appointments,
+                  {
+                    uid: this.state.createBookingUID,
+                    start: moment(this.state.createBookingDate)
+                      .hour(this.state.createBookingTime.hour())
+                      .minute(this.state.createBookingTime.minute()),
+                    end: moment(this.state.createBookingDate)
+                      .hour(this.state.createBookingTime.hour())
+                      .minute(this.state.createBookingTime.minute())
+                      .add(30, "minute"),
+                    doctor: this.state.createBookingDocName,
+                    comment: this.state.createBookingComments,
+                    value: this.state.currentUsername
+                  }
+                ],
+                screen: "customerScreen",
+                //createBookingDocType: "podiatrist",
+                //createBookingDocName: "Alena",
+                //createBookingDate: new Date(),
+                //createBookingTime: moment()
                 //.hour(8).minute(0),
-              //createBookingComments: "",
-			  createBookingUID: prevState.createBookingUID+1
+                //createBookingComments: "",
+                createBookingUID: prevState.createBookingUID + 1
+              }));
+              let isCancelling = false;
+              let docs = this.state.doctors.filter(
+                d => d.name === this.state.createBookingDocName
+              );
+              let docEmail = docs[0].email;
+              let docName = docs[0].name;
+              let customers = this.state.users.filter(
+                u => u.username === this.state.currentUsername
+              );
+              let cus_name = customers[0].name;
+              let start_time = moment(this.state.createBookingDate)
+                .hour(this.state.createBookingTime.hour())
+                .minute(this.state.createBookingTime.minute());
+              let end_time = moment(this.state.createBookingDate)
+                .hour(this.state.createBookingTime.hour())
+                .minute(this.state.createBookingTime.minute())
+                .add(30, "minute");
+              let time = start_time
+                .format("MMMM Do LT")
+                .concat(" - ")
+                .concat(end_time.format("LT"));
+              let phone_number = customers[0].contactNumber;
+              let cus_email = customers[0].username;
+              let comments = this.state.createBookingComments;
+
+              // isCancelling, doc_email, doc_name, cus_name, time, phone_number, cus_email, comments
+              this.sendEmail(
+                isCancelling,
+                docEmail,
+                docName,
+                cus_name,
+                time,
+                phone_number,
+                cus_email,
+                comments
+              );
+            }}
+          >
+            <div>
+              <label>
+                Doctor Type
+                <select
+                  value={this.state.createBookingDocType}
+                  onChange={event => {
+                    let firstDoc = this.state.doctors
+                      .filter(doc => doc.type === event.target.value)
+                      .map(doc => doc.name)[0];
+                    this.setState({
+                      createBookingDocType: event.target.value,
+                      createBookingDocName: firstDoc
+                    });
+                  }}
+                >
+                  {availDocTypes.map(type => {
+                    return <option value={type}>{type}</option>;
+                  })}
+                </select>
+              </label>
+            </div>
+            <div>
+              <label>
+                Doctor Name
+                <select
+                  value={this.state.createBookingDocName}
+                  onChange={event => {
+                    this.setState({ createBookingDocName: event.target.value });
+                  }}
+                >
+                  {this.state.doctors
+                    .filter(doc => doc.type === this.state.createBookingDocType)
+                    .map(doc => {
+                      return (
+                        <option value={doc.name}>
+                          {doc.name} : ${doc.price} per hour
+                        </option>
+                      );
+                    })}
+                </select>
+              </label>
+            </div>
+            <div>
+              <div>
+                Date
+                <DatePicker
+                  selected={this.state.createBookingDate}
+                  onChange={event => {
+                    this.setState({ createBookingDate: event });
+                  }}
+                  minDate={new Date()}
+                />
+              </div>
+            </div>
+            <div>
+              <label>
+                Time <b>{this.state.createBookingTime.format("LT")}</b>
+              </label>
+            </div>
+            <div>
+              <label>
+                Comments
+                <input
+                  type="text"
+                  value={this.state.createBookingComments}
+                  onChange={event => {
+                    this.setState({
+                      createBookingComments: event.target.value
+                    });
+                  }}
+                />
+              </label>
+            </div>
+            <input type="submit" value="Book Appointment" />
+          </form>
+        </div>
+        <WeekCalendar
+          firstDay={this.state.calendarDisplayWeek}
+          startTime={moment({ h: 9, m: 0 })}
+          endTime={moment({ h: 17, m: 0 })}
+          numberOfDays={7}
+          scaleHeaderTitle={this.state.createBookingDocName}
+          scaleUnit={30}
+          useModal={false}
+          selectedIntervals={this.state.appointments
+            .filter(
+              app =>
+                app.doctor === this.state.createBookingDocName ||
+                app.value === "Lunch"
+            )
+            .map(app => {
+              return {
+                uid: app.uid,
+                start: app.start,
+                end: app.end,
+                time: app.start,
+                doctor: app.doctor,
+                comment:
+                  app.value === this.state.currentUsername ? app.comment : "",
+                value:
+                  app.value === this.state.currentUsername ? "You" : "Occupied"
+              };
+            })}
+          eventComponent={AppointmentEvent}
+          onEventClick={event => {
+            if (
+              event.value === "You" &&
+              window.confirm("Delete this appointment?")
+            ) {
+              this.setState({
+                appointments: this.state.appointments.filter(
+                  app =>
+                    app.value !== this.state.currentUsername ||
+                    app.start !== event.time
+                )
+              });
+            }
+          }}
+          onIntervalSelect={event => {
+            let d = event[0].start;
+            this.setState({
+              createBookingDate: new Date(d.year(), d.month(), d.date()),
+              createBookingTime: moment()
+                .hour(d.hour())
+                .minute(d.minute())
+            });
+          }}
+        />
+        <button
+          onClick={() => {
+            this.setState(prevState => ({
+              calendarDisplayWeek: prevState.calendarDisplayWeek.add(-1, "week")
             }));
           }}
         >
-          <div>
-            <label>
-              Doctor Type
-              <select
-                value={this.state.createBookingDocType}
-                onChange={event => {
-				  let firstDoc = this.state.doctors
-                  .filter(doc => doc.type === event.target.value)
-                  .map(doc => doc.name)[0];
-                  this.setState({ createBookingDocType: event.target.value, createBookingDocName: firstDoc});
-                }}
-              >
-                {availDocTypes.map(type => {
-                  return <option value={type}>{type}</option>;
-                })}
-              </select>
-            </label>
-          </div>
-          <div>
-            <label>
-              Doctor Name
-              <select
-                value={this.state.createBookingDocName}
-                onChange={event => {
-                  this.setState({ createBookingDocName: event.target.value });
-                }}
-              >
-                {this.state.doctors
-                  .filter(doc => doc.type === this.state.createBookingDocType)
-                  .map(doc => {
-                    return (
-                      <option value={doc.name}>
-                        {doc.name} : ${doc.price} per hour
-                      </option>
-                    );
-                  })}
-              </select>
-            </label>
-          </div>
-          <div>
-            <div>
-              Date
-              <DatePicker
-                selected={this.state.createBookingDate}
-                onChange={event => {
-                  this.setState({ createBookingDate: event });
-                }}
-                minDate={new Date()}
-              />
-            </div>
-          </div>
-          <div>
-            <label>
-              Time <b>{this.state.createBookingTime.format("LT")}</b>
-            </label>
-          </div>
-          <div>
-            <label>
-              Comments
-              <input
-                type="text"
-                value={this.state.createBookingComments}
-                onChange={event => {
-                  this.setState({ createBookingComments: event.target.value })
-              }}
-              />
-            </label>
-          </div>
-          <input type="submit" value="Book Appointment" />
-        </form>
-        </div>
-		<WeekCalendar
-            firstDay={this.state.calendarDisplayWeek}
-            startTime={moment({ h: 9, m: 0 })}
-            endTime={moment({ h: 17, m: 0 })}
-            numberOfDays={7}
-            scaleHeaderTitle={this.state.createBookingDocName}
-            scaleUnit={30}
-            useModal={false}
-            selectedIntervals={
-				this.state.appointments
-				.filter(app => app.doctor === this.state.createBookingDocName || app.value === "Lunch")
-				.map(app => { return {
-							  uid: app.uid,
-							  start: app.start,
-							  end: app.end,
-							  time: app.start,
-							  doctor: app.doctor,
-							  comment: (app.value === this.state.currentUsername ? app.comment : ""),
-							  value: (app.value === this.state.currentUsername ? "You" : "Occupied")
-							};
-				})
-			}
-            eventComponent={AppointmentEvent}
-			onEventClick={event => {
-                  if(event.value === "You" &&
-					window.confirm("Delete this appointment?")){
-					  this.setState({
-						appointments: this.state.appointments.filter((app) =>
-							app.value !== this.state.currentUsername ||
-							app.start !== event.time
-						)
-					  });
-
-				  }
-                }
-			}
-			onIntervalSelect={event => {
-				let d = event[0].start;
-				this.setState({ createBookingDate: new Date(d.year(), d.month(), d.date()),
-								createBookingTime: moment().hour(d.hour()).minute(d.minute())
-				});
-			  }
-			}
-          />
-		<button
-            onClick={() => {
-              this.setState(prevState => ({ calendarDisplayWeek: prevState.calendarDisplayWeek.add(-1,'week')}));
-            }}
-          >
-			Prev
+          Prev
         </button>
-		<button
-            onClick={() => {
-              this.setState(prevState => ({ calendarDisplayWeek: prevState.calendarDisplayWeek.add(1,'week')}));
-            }}
-          >
-			Next
+        <button
+          onClick={() => {
+            this.setState(prevState => ({
+              calendarDisplayWeek: prevState.calendarDisplayWeek.add(1, "week")
+            }));
+          }}
+        >
+          Next
         </button>
       </div>
     );
@@ -771,105 +881,105 @@ class App extends React.Component {
       <div>
         <h1>Edit User Details</h1>
         <div className="formWrap">
-        <form
-          onSubmit={event => {
-            event.preventDefault();
+          <form
+            onSubmit={event => {
+              event.preventDefault();
 
-            if (this.state.newUserEmail !== "") {
-              tempCurUser.username = this.state.newUserEmail;
-            }
-            if (this.state.newUserPassword !== "") {
-              tempCurUser.password = this.state.newUserPassword;
-            }
-            if (this.state.newUserName !== "") {
-              tempCurUser.name = this.state.newUserName;
-            }
-            if (this.state.newUserAddress !== "") {
-              tempCurUser.address = this.state.newUserAddress;
-            }
-            if (this.state.newUserContactNumber !== "") {
-              tempCurUser.contactNumber = this.state.newUserContactNumber;
-            }
+              if (this.state.newUserEmail !== "") {
+                tempCurUser.username = this.state.newUserEmail;
+              }
+              if (this.state.newUserPassword !== "") {
+                tempCurUser.password = this.state.newUserPassword;
+              }
+              if (this.state.newUserName !== "") {
+                tempCurUser.name = this.state.newUserName;
+              }
+              if (this.state.newUserAddress !== "") {
+                tempCurUser.address = this.state.newUserAddress;
+              }
+              if (this.state.newUserContactNumber !== "") {
+                tempCurUser.contactNumber = this.state.newUserContactNumber;
+              }
 
-            // TODO : CHANGE THIS TO SAVE THE STATE THE USER ENTERED
-            this.setState(prevState => ({
-              users: tempUsers,
-              screen: "customerScreen",
-              newUserName: "",
-              newUserAddress: "",
-              newUserContactNumber: "",
-              newUserEmail: "",
-              newUserPassword: ""
-            }));
-          }}
-        >
-          <div>
-            <label>
-              Name
-              <input
-                type="text"
-                placeholder={tempCurUser.name}
-                value={this.state.newUserName}
-                onChange={event =>
-                  this.setState({ newUserName: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Home Address
-              <input
-                type="text"
-                placeholder={tempCurUser.address}
-                value={this.state.newUserAddress}
-                onChange={event =>
-                  this.setState({ newUserAddress: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Contact Phone Number
-              <input
-                type="text"
-                placeholder={tempCurUser.contactNumber}
-                value={this.state.newUserContactNumber}
-                onChange={event =>
-                  this.setState({ newUserContactNumber: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Email
-              <input
-                type="text"
-                placeholder={tempCurUser.username}
-                value={this.state.newUserEmail}
-                onChange={event =>
-                  this.setState({ newUserEmail: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              Password
-              <input
-                type="text"
-                placeholder={tempCurUser.password}
-                value={this.state.newUserPassword}
-                onChange={event =>
-                  this.setState({ newUserPassword: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <input type="submit" value="Save" />
-        </form>
+              // TODO : CHANGE THIS TO SAVE THE STATE THE USER ENTERED
+              this.setState(prevState => ({
+                users: tempUsers,
+                screen: "customerScreen",
+                newUserName: "",
+                newUserAddress: "",
+                newUserContactNumber: "",
+                newUserEmail: "",
+                newUserPassword: ""
+              }));
+            }}
+          >
+            <div>
+              <label>
+                Name
+                <input
+                  type="text"
+                  placeholder={tempCurUser.name}
+                  value={this.state.newUserName}
+                  onChange={event =>
+                    this.setState({ newUserName: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Home Address
+                <input
+                  type="text"
+                  placeholder={tempCurUser.address}
+                  value={this.state.newUserAddress}
+                  onChange={event =>
+                    this.setState({ newUserAddress: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Contact Phone Number
+                <input
+                  type="text"
+                  placeholder={tempCurUser.contactNumber}
+                  value={this.state.newUserContactNumber}
+                  onChange={event =>
+                    this.setState({ newUserContactNumber: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Email
+                <input
+                  type="text"
+                  placeholder={tempCurUser.username}
+                  value={this.state.newUserEmail}
+                  onChange={event =>
+                    this.setState({ newUserEmail: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label>
+                Password
+                <input
+                  type="text"
+                  placeholder={tempCurUser.password}
+                  value={this.state.newUserPassword}
+                  onChange={event =>
+                    this.setState({ newUserPassword: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <input type="submit" value="Save" />
+          </form>
         </div>
       </div>
     );
@@ -879,191 +989,293 @@ class App extends React.Component {
     var tempApps = this.state.appointments;
     var tempCurApp = null;
     tempApps.forEach(app => {
-        if (app.value === this.state.currentUsername) {
-            tempCurApp = app;
-        }
-    })
+      if (app.value === this.state.currentUsername) {
+        tempCurApp = app;
+      }
+    });
     if (tempCurApp === null) {
-        this.setState(prevState => ({
-          screen: "bookAppointment"
-        }));
+      this.setState(prevState => ({
+        screen: "bookAppointment"
+      }));
     }
 
     let availDocTypes = [...new Set(this.state.doctors.map(doc => doc.type))];
-	return (
+    return (
       <div>
-      <h1>Edit Appointment</h1>
-      <div className="formWrap">
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            tempCurApp.uid = this.state.createBookingUID;
-            tempCurApp.start = moment(this.state.createBookingDate)
-                  .hour(this.state.createBookingTime.hour())
-                  .minute(this.state.createBookingTime.minute());
-            tempCurApp.end = moment(this.state.createBookingDate)
-                  .hour(this.state.createBookingTime.hour())
-                  .minute(this.state.createBookingTime.minute())
-                  .add(30, "minute");
-            tempCurApp.doctor = this.state.createBookingDocName;
-            tempCurApp.comment = this.state.createBookingComments;
-            tempCurApp.value = this.state.currentUsername;
+        <h1>Edit Appointment</h1>
+        <div className="formWrap">
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              tempCurApp.uid = this.state.createBookingUID;
+              tempCurApp.start = moment(this.state.createBookingDate)
+                .hour(this.state.createBookingTime.hour())
+                .minute(this.state.createBookingTime.minute());
+              tempCurApp.end = moment(this.state.createBookingDate)
+                .hour(this.state.createBookingTime.hour())
+                .minute(this.state.createBookingTime.minute())
+                .add(30, "minute");
+              tempCurApp.doctor = this.state.createBookingDocName;
+              tempCurApp.comment = this.state.createBookingComments;
+              tempCurApp.value = this.state.currentUsername;
+              this.setState(prevState => ({
+                appointments: tempApps,
+                screen: "customerScreen"
+              }));
+            }}
+          >
+            <div>
+              <label>
+                Doctor Type
+                <select
+                  value={this.state.createBookingDocType}
+                  onChange={event => {
+                    let firstDoc = this.state.doctors
+                      .filter(doc => doc.type === event.target.value)
+                      .map(doc => doc.name)[0];
+                    this.setState({
+                      createBookingDocType: event.target.value,
+                      createBookingDocName: firstDoc
+                    });
+                  }}
+                >
+                  {availDocTypes.map(type => {
+                    return <option value={type}>{type}</option>;
+                  })}
+                </select>
+              </label>
+            </div>
+            <div>
+              <label>
+                Doctor Name
+                <select
+                  value={tempCurApp.doctor}
+                  onChange={event => {
+                    tempCurApp.doctor = event.target.value;
+                    this.setState({ createBookingDocName: event.target.value });
+                  }}
+                >
+                  {this.state.doctors
+                    .filter(doc => doc.type === this.state.createBookingDocType)
+                    .map(doc => {
+                      return (
+                        <option value={doc.name}>
+                          {doc.name} : ${doc.price} per hour
+                        </option>
+                      );
+                    })}
+                </select>
+              </label>
+            </div>
+            <div>
+              <div>
+                Time
+                <DatePicker
+                  selected={this.state.createBookingDate}
+                  onChange={event => {
+                    this.setState({ createBookingDate: event });
+                  }}
+                  minDate={new Date()}
+                />
+              </div>
+            </div>
+            <div>
+              <label>
+                Time <b>{this.state.createBookingTime.format("LT")}</b>
+              </label>
+            </div>
+            <div>
+              <label>
+                Comments
+                <input
+                  type="text"
+                  value={this.state.createBookingComments}
+                  onChange={event =>
+                    this.setState({ createBookingComments: event.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <button
+              onClick={() => {
+                if (window.confirm("Cancel this appointment?")) {
+                  this.setState({
+                    appointments: this.state.appointments.filter(
+                      app => app.value !== this.state.currentUsername
+                    ),
+                    screen: "customerScreen"
+                  });
+                }
+              }}
+            >
+              Cancel Appointment
+            </button>
+            <input type="submit" value="Save Appointment" />
+          </form>
+        </div>
+        <WeekCalendar
+          firstDay={this.state.calendarDisplayWeek}
+          startTime={moment({ h: 9, m: 0 })}
+          endTime={moment({ h: 17, m: 0 })}
+          numberOfDays={7}
+          scaleHeaderTitle={this.state.createBookingDocName}
+          scaleUnit={30}
+          useModal={false}
+          selectedIntervals={this.state.appointments
+            .filter(
+              app =>
+                app.doctor === this.state.createBookingDocName ||
+                app.value === "Lunch"
+            )
+            .map(app => {
+              return {
+                uid: app.uid,
+                start: app.start,
+                end: app.end,
+                time: app.start,
+                doctor: app.doctor,
+                comment:
+                  app.value === this.state.currentUsername ? app.comment : "",
+                value:
+                  app.value === this.state.currentUsername ? "You" : "Occupied"
+              };
+            })}
+          eventComponent={AppointmentEvent}
+          onEventClick={event => {
+            if (
+              event.value === "You" &&
+              window.confirm("Cancel this appointment?")
+            ) {
+              this.setState({
+                appointments: this.state.appointments.filter(
+                  app =>
+                    app.value !== this.state.currentUsername ||
+                    app.start !== event.time
+                ),
+                screen: "customerScreen"
+              });
+              let isCancelling = true;
+              let docName = this.state.createBookingDocName;
+              let comments = this.state.createBookingComments;
+
+              let docs = this.state.doctors.filter(
+                d => d.name === this.state.createBookingDocName
+              );
+              let docEmail = docs[0].email;
+              let customers = this.state.users.filter(
+                u => u.username === this.state.currentUsername
+              );
+              let cus_name = customers[0].name;
+              let start_time = moment(this.state.createBookingDate)
+                .hour(this.state.createBookingTime.hour())
+                .minute(this.state.createBookingTime.minute());
+              let end_time = moment(this.state.createBookingDate)
+                .hour(this.state.createBookingTime.hour())
+                .minute(this.state.createBookingTime.minute())
+                .add(30, "minute");
+              let time = start_time
+                .format("MMMM Do LT")
+                .concat(" - ")
+                .concat(end_time.format("LT"));
+              let phone_number = customers[0].contactNumber;
+              let cus_email = customers[0].username;
+
+              // isCancelling, doc_email, doc_name, cus_name, time, phone_number, cus_email, comments
+              this.sendEmail(
+                isCancelling,
+                docEmail,
+                docName,
+                cus_name,
+                time,
+                phone_number,
+                cus_email,
+                comments
+              );
+            }
+          }}
+          onIntervalSelect={event => {
+            let d = event[0].start;
+            this.setState({
+              createBookingDate: new Date(d.year(), d.month(), d.date()),
+              createBookingTime: moment()
+                .hour(d.hour())
+                .minute(d.minute())
+            });
+          }}
+        />
+        <button
+          onClick={() => {
             this.setState(prevState => ({
-              appointments: tempApps,
-              screen: "customerScreen"
+              calendarDisplayWeek: prevState.calendarDisplayWeek.add(-1, "week")
             }));
           }}
         >
-          <div>
-            <label>
-              Doctor Type
-              <select
-                value={this.state.createBookingDocType}
-                onChange={event => {
-				  let firstDoc = this.state.doctors
-                  .filter(doc => doc.type === event.target.value)
-                  .map(doc => doc.name)[0];
-                  this.setState({ createBookingDocType: event.target.value, createBookingDocName: firstDoc});
-                }}
-              >
-                {availDocTypes.map(type => {
-                  return <option value={type}>{type}</option>;
-                })}
-              </select>
-            </label>
-          </div>
-          <div>
-            <label>
-              Doctor Name
-              <select
-                value={tempCurApp.doctor}
-                onChange={event => {
-                    tempCurApp.doctor = event.target.value;
-                  this.setState({ createBookingDocName: event.target.value });
-                }}
-              >
-                {this.state.doctors
-                  .filter(doc => doc.type === this.state.createBookingDocType)
-                  .map(doc => {
-                    return (
-                      <option value={doc.name}>
-                        {doc.name} : ${doc.price} per hour
-                      </option>
-                    );
-                  })}
-              </select>
-            </label>
-          </div>
-          <div>
-            <div>
-              Time
-              <DatePicker
-                selected={this.state.createBookingDate}
-                onChange={event => {
-                  this.setState({ createBookingDate: event });
-                }}
-                minDate={new Date()}
-              />
-            </div>
-          </div>
-          <div>
-            <label>
-              Time <b>{this.state.createBookingTime.format("LT")}</b>
-            </label>
-          </div>
-          <div>
-            <label>
-              Comments
-              <input
-                type="text"
-                value={this.state.createBookingComments}
-                onChange={event =>
-                  this.setState({ createBookingComments: event.target.value })
-                }
-              />
-            </label>
-          </div>
-          <button
-              onClick={() => {
-                  if(window.confirm("Cancel this appointment?")){
-                      this.setState({
-                        appointments: this.state.appointments.filter((app) =>
-                            app.value !== this.state.currentUsername
-                        ),
-                        screen: "customerScreen"
-                      });
-
-                  }
-              }}
-            >
-  			Cancel Appointment
-          </button>
-          <input type="submit" value="Save Appointment" />
-        </form>
-        </div>
-		<WeekCalendar
-            firstDay={this.state.calendarDisplayWeek}
-            startTime={moment({ h: 9, m: 0 })}
-            endTime={moment({ h: 17, m: 0 })}
-            numberOfDays={7}
-            scaleHeaderTitle={this.state.createBookingDocName}
-            scaleUnit={30}
-            useModal={false}
-            selectedIntervals={
-				this.state.appointments
-				.filter(app => app.doctor === this.state.createBookingDocName || app.value === "Lunch")
-				.map(app => { return {
-							  uid: app.uid,
-							  start: app.start,
-							  end: app.end,
-							  time: app.start,
-							  doctor: app.doctor,
-							  comment: (app.value === this.state.currentUsername ? app.comment : ""),
-							  value: (app.value === this.state.currentUsername ? "You" : "Occupied")
-							};
-				})
-			}
-            eventComponent={AppointmentEvent}
-			onEventClick={event => {
-                  if(event.value === "You" &&
-					window.confirm("Cancel this appointment?")){
-					  this.setState({
-						appointments: this.state.appointments.filter((app) =>
-							app.value !== this.state.currentUsername ||
-							app.start !== event.time
-						),
-                        screen: "customerScreen"
-					  });
-
-				  }
-                }
-			}
-			onIntervalSelect={event => {
-				let d = event[0].start;
-				this.setState({ createBookingDate: new Date(d.year(), d.month(), d.date()),
-								createBookingTime: moment().hour(d.hour()).minute(d.minute())
-				});
-			  }
-			}
-          />
-		<button
-            onClick={() => {
-              this.setState(prevState => ({ calendarDisplayWeek: prevState.calendarDisplayWeek.add(-1,'week')}));
-            }}
-          >
-			Prev
+          Prev
         </button>
-		<button
-            onClick={() => {
-              this.setState(prevState => ({ calendarDisplayWeek: prevState.calendarDisplayWeek.add(1,'week')}));
-            }}
-          >
-			Next
+        <button
+          onClick={() => {
+            this.setState(prevState => ({
+              calendarDisplayWeek: prevState.calendarDisplayWeek.add(1, "week")
+            }));
+          }}
+        >
+          Next
         </button>
       </div>
     );
   };
 
+  sendEmail = (
+    isCancelling,
+    doc_email,
+    doc_name,
+    cus_name,
+    time,
+    phone_number,
+    cus_email,
+    comments
+  ) => {
+    let template = isCancelling ? "cancel_booking" : "create_booking";
+    console.log("Sending email");
+    console.log(
+      isCancelling,
+      doc_email,
+      doc_name,
+      cus_name,
+      time,
+      phone_number,
+      cus_email,
+      comments
+    );
+    emailjs.send(
+      "gmail",
+      template,
+      {
+        doc_email: doc_email,
+        doc_name: doc_name,
+        cus_name: cus_name,
+        time: time,
+        phone_number: phone_number,
+        cus_email: cus_email,
+        comments: comments
+      },
+      emailjs_userid
+    );
+    // emailjs.send(
+    //   "gmail",
+    //   "create_booking",
+    //   {
+    //     doc_email: "aldriedger@gmail.com",
+    //     doc_name: "alex",
+    //     cus_name: "joe schmuck",
+    //     time: "May 26 4:00pm - 4:30pm",
+    //     phone_number: "123-456-7890",
+    //     cus_email: "test@blackhole.com",
+    //     comments: "This is a from react"
+    //   },
+    //   emailjs_userid
+    // );
+  };
 }
 
 export default App;
