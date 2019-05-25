@@ -11,6 +11,128 @@ import "react-datepicker/dist/react-datepicker-cssmodules.css";
 import * as emailjs from "emailjs-com";
 const { emailjs_userid } = require("./credentials.json");
 
+const startingState = {
+  screen: "Login",
+  users: [
+    {
+      username: "Admin",
+      password: "Secret",
+      name: "",
+      address: "",
+      contactNumber: ""
+    },
+    {
+      username: "test",
+      password: "testing",
+      name: "Test McTester",
+      address: "123 Street",
+      contactNumber: "123-456-7890"
+    }
+  ],
+  doctors: [
+    {
+      type: "chiropractor",
+      name: "Alena",
+      email: "alena@blackhole.com",
+      price: 150
+    },
+    {
+      type: "chiropractor",
+      name: "Sarah",
+      email: "sarah@blackhole.com",
+      price: 80
+    },
+    {
+      type: "podiatrist",
+      name: "Jeff",
+      email: "jeff@blackhole.com",
+      price: 100
+    },
+    {
+      type: "podiatrist",
+      name: "Bob",
+      email: "bob@blackhole.com",
+      price: 110
+    }
+  ],
+  appointments: [
+    {
+      uid: 8,
+      start: moment()
+        .hour(13)
+        .minute(0),
+      end: moment()
+        .hour(13)
+        .minute(30),
+      doctor: "Bob",
+      comment: "Knee appointment",
+      value: "Janine Doink"
+    },
+    {
+      uid: 9,
+      start: moment()
+        .hour(15)
+        .minute(0),
+      end: moment()
+        .hour(15)
+        .minute(30),
+      doctor: "Bob",
+      comment: "Arms and stuff",
+      value: "val2"
+    },
+    {
+      uid: 10,
+      start: moment()
+        .add(1, "day")
+        .hour(10)
+        .minute(0),
+      end: moment()
+        .add(1, "day")
+        .hour(10)
+        .minute(30),
+      doctor: "Alena",
+      comment: "Doctory things",
+      value: "val3"
+    },
+    {
+      uid: 11,
+      start: moment()
+        .hour(11)
+        .minute(30)
+        .add(1, "week"),
+      end: moment()
+        .hour(12)
+        .minute(0)
+        .add(1, "week"),
+      doctor: "Alena",
+      comment: "Stuff & things",
+      value: "val4"
+    }
+  ],
+  currentUsername: "",
+  currentPassword: "",
+  loggedIn: false,
+  newUserName: "",
+  newUserAddress: "",
+  newUserContactNumber: "",
+  newUserEmail: "",
+  newUserPassword: "",
+  newDocType: "",
+  newDocPrice: "",
+  activeUser: 0,
+  createBookingDocType: "chiropractor",
+  createBookingDocName: "Alena",
+  createBookingDate: new Date(),
+  createBookingTime: moment()
+    .hour(9)
+    .minute(0),
+  createBookingComments: "",
+  calendarDisplayWeek: moment()
+    .startOf("week")
+    .add(1, "day"),
+  createBookingUID: 12
+};
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -22,129 +144,15 @@ class App extends React.Component {
     ) {
       console.log("State was empty, using default state");
 
-      this.state = {
-        screen: "Login",
-        users: [
-          {
-            username: "Admin",
-            password: "Secret",
-            name: "",
-            address: "",
-            contactNumber: ""
-          },
-          {
-            username: "test",
-            password: "testing",
-            name: "Test McTester",
-            address: "123 Street",
-            contactNumber: "123-456-7890"
-          }
-        ],
-        doctors: [
-          {
-            type: "chiropractor",
-            name: "Alena",
-            email: "alena@blackhole.com",
-            price: 150
-          },
-          {
-            type: "chiropractor",
-            name: "Sarah",
-            email: "sarah@blackhole.com",
-            price: 80
-          },
-          {
-            type: "podiatrist",
-            name: "Jeff",
-            email: "jeff@blackhole.com",
-            price: 100
-          },
-          {
-            type: "podiatrist",
-            name: "Bob",
-            email: "bob@blackhole.com",
-            price: 110
-          }
-        ],
-        appointments: [
-          {
-            uid: 8,
-            start: moment()
-              .hour(13)
-              .minute(0),
-            end: moment()
-              .hour(13)
-              .minute(30),
-            doctor: "Bob",
-            comment: "Knee appointment",
-            value: "Janine Doink"
-          },
-          {
-            uid: 9,
-            start: moment()
-              .hour(15)
-              .minute(0),
-            end: moment()
-              .hour(15)
-              .minute(30),
-            doctor: "Bob",
-            comment: "Arms and stuff",
-            value: "val2"
-          },
-          {
-            uid: 10,
-            start: moment()
-              .add(1, "day")
-              .hour(10)
-              .minute(0),
-            end: moment()
-              .add(1, "day")
-              .hour(10)
-              .minute(30),
-            doctor: "Alena",
-            comment: "Doctory things",
-            value: "val3"
-          },
-          {
-            uid: 11,
-            start: moment()
-              .hour(11)
-              .minute(30)
-              .add(1, "week"),
-            end: moment()
-              .hour(12)
-              .minute(0)
-              .add(1, "week"),
-            doctor: "Alena",
-            comment: "Stuff & things",
-            value: "val4"
-          }
-        ],
-        currentUsername: "",
-        currentPassword: "",
-        loggedIn: false,
-        newUserName: "",
-        newUserAddress: "",
-        newUserContactNumber: "",
-        newUserEmail: "",
-        newUserPassword: "",
-        newDocType: "",
-        newDocPrice: "",
-        activeUser: 0,
-        createBookingDocType: "chiropractor",
-        createBookingDocName: "Alena",
-        createBookingDate: new Date(),
-        createBookingTime: moment()
-          .hour(9)
-          .minute(0),
-        createBookingComments: "",
-        calendarDisplayWeek: moment()
-          .startOf("week")
-          .add(1, "day"),
-        createBookingUID: 12
-      };
+      this.state = startingState;
     } else {
-      this.state = defaultState;
+      let tempUsers = defaultState.users;
+      this.state = {
+        ...startingState,
+        users: defaultState.users,
+        doctors: defaultState.doctors
+      };
+      console.log("new state from saved:", this.state);
     }
     this.setupAppointments();
     // this.sendEmail();
