@@ -66,7 +66,7 @@ const startingState = {
         .minute(30),
       doctor: "Bob",
       comment: "Knee appointment",
-      value: "Janine Doink"
+      value: "Janine La Croix"
     },
     {
       uid: 9,
@@ -77,8 +77,8 @@ const startingState = {
         .hour(15)
         .minute(30),
       doctor: "Bob",
-      comment: "Arms and stuff",
-      value: "val2"
+      comment: "Strained ankle",
+      value: "Kevin Gauss"
     },
     {
       uid: 10,
@@ -91,8 +91,8 @@ const startingState = {
         .hour(10)
         .minute(30),
       doctor: "Alena",
-      comment: "Doctory things",
-      value: "val3"
+      comment: "Dislocated spine",
+      value: "Regina Phelange"
     },
     {
       uid: 11,
@@ -105,8 +105,8 @@ const startingState = {
         .minute(0)
         .add(1, "week"),
       doctor: "Alena",
-      comment: "Stuff & things",
-      value: "val4"
+      comment: "I died hard",
+      value: "John McClane"
     }
   ],
   currentUsername: "",
@@ -136,6 +136,7 @@ const startingState = {
 class App extends React.Component {
   constructor(props) {
     super(props);
+	//window.localStorage.clear();
     var defaultState = JSON.parse(window.localStorage.getItem("state"));
     if (
       defaultState === null ||
@@ -146,15 +147,20 @@ class App extends React.Component {
 
       this.state = startingState;
     } else {
-      let tempUsers = defaultState.users;
+	  defaultState.appointments.map(app => {
+		  app.start = moment(app.start);
+		  app.end = moment(app.end);
+		  return app;
+	  })
       this.state = {
         ...startingState,
         users: defaultState.users,
-        doctors: defaultState.doctors
+        doctors: defaultState.doctors,
+		appointments: defaultState.appointments
       };
       console.log("new state from saved:", this.state);
     }
-    this.setupAppointments();
+    //this.setupAppointments();
     // this.sendEmail();
   }
 
@@ -648,6 +654,7 @@ class App extends React.Component {
 
   renderBookingAppointmentScreen = () => {
     let availDocTypes = [...new Set(this.state.doctors.map(doc => doc.type))];
+	var curName = this.state.users[this.state.activeUser].name;
     return (
       <div>
         <h1>Book Appointment</h1>
@@ -669,7 +676,7 @@ class App extends React.Component {
                       .add(30, "minute"),
                     doctor: this.state.createBookingDocName,
                     comment: this.state.createBookingComments,
-                    value: this.state.currentUsername
+                    value: curName
                   }
                 ],
                 screen: "customerScreen",
@@ -678,7 +685,7 @@ class App extends React.Component {
                 //createBookingDate: new Date(),
                 //createBookingTime: moment()
                 //.hour(8).minute(0),
-                //createBookingComments: "",
+                createBookingComments: "",
                 createBookingUID: prevState.createBookingUID + 1
               }));
               let isCancelling = false;
